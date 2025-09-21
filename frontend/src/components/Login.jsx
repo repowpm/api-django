@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const Login = () => {
@@ -11,6 +12,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -34,6 +36,8 @@ const Login = () => {
       
       if (result.success) {
         toast.success('¡Bienvenido!');
+        // Redireccionar al dashboard después del login exitoso
+        navigate('/dashboard');
       } else {
         toast.error(result.error || 'Error al iniciar sesión');
       }
