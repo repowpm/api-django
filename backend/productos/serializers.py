@@ -48,12 +48,20 @@ class ProductoSerializer(serializers.ModelSerializer):
 
     def validate_precio(self, value):
         """Validación personalizada para el precio"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.info(f"Validando precio: {value} (tipo: {type(value)})")
+        
         if value <= 0:
+            logger.error(f"Precio inválido: {value} <= 0")
             raise serializers.ValidationError("El precio debe ser mayor a 0")
         
-        if value > 999999.99:
-            raise serializers.ValidationError("El precio no puede ser mayor a $999,999.99")
+        if value > 99999999.99:
+            logger.error(f"Precio demasiado alto: {value} > 99999999.99")
+            raise serializers.ValidationError("El precio no puede ser mayor a $99,999,999.99")
         
+        logger.info(f"Precio válido: {value}")
         return value
 
     def validate_stock(self, value):
