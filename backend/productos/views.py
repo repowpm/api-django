@@ -129,60 +129,88 @@ class ProductoViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         """Actualizar producto con manejo de PDF"""
         try:
+            logger.info(f"Iniciando actualización de producto. Usuario: {request.user.username}")
+            logger.info(f"Datos recibidos: {dict(request.data)}")
+            logger.info(f"Archivos recibidos: {list(request.FILES.keys())}")
+            
             with transaction.atomic():
                 instance = self.get_object()
                 data = request.data.copy()
                 pdf_file = request.FILES.get('orden_trabajo_pdf')
                 
-                # Solo actualizar PDF si se envía un nuevo archivo
-                if pdf_file:
-                    # Validar tamaño del archivo
-                    if pdf_file.size > 10 * 1024 * 1024:  # 10MB
-                        return Response({
-                            'error': 'El archivo PDF no puede ser mayor a 10MB'
-                        }, status=status.HTTP_400_BAD_REQUEST)
-                    
-                    data['orden_trabajo_pdf'] = pdf_file.read()
-                else:
-                    # Si no se envía archivo, mantener el PDF existente solo si existe
-                    if 'orden_trabajo_pdf' not in data and instance.orden_trabajo_pdf:
-                        data['orden_trabajo_pdf'] = instance.orden_trabajo_pdf
+                logger.info(f"PDF file presente: {pdf_file is not None}")
+                
+                # Remover el campo PDF de los datos para evitar problemas de validación
+                if 'orden_trabajo_pdf' in data:
+                    del data['orden_trabajo_pdf']
+                
+                logger.info(f"Campos en data: {list(data.keys())}")
                 
                 partial = kwargs.pop('partial', False)
                 serializer = self.get_serializer(instance, data=data, partial=partial)
-                serializer.is_valid(raise_exception=True)
-                producto = serializer.save()
+                logger.info(f"Serializer creado: {type(serializer).__name__}")
                 
-                logger.info(f"Producto actualizado: {producto.nombre} por usuario {request.user.username}")
-                
-                return Response(serializer.data)
+                logger.info("Validando serializer...")
+                if serializer.is_valid():
+                    logger.info("Serializer es válido, guardando producto...")
+                    producto = serializer.save()
+                    
+                    # Manejar PDF después de actualizar el producto
+                    if pdf_file:
+                        logger.info(f"Procesando archivo PDF. Tamaño: {pdf_file.size}")
+                        if pdf_file.size > 10 * 1024 * 1024:  # 10MB
+                            logger.warning(f"Archivo PDF demasiado grande: {pdf_file.size} bytes")
+                            return Response({
+                                'error': 'El archivo PDF no puede ser mayor a 10MB'
+                            }, status=status.HTTP_400_BAD_REQUEST)
+                        
+                        producto.orden_trabajo_pdf = pdf_file.read()
+                        producto.save()
+                        logger.info("PDF guardado en el producto")
+                    
+                    logger.info(f"Producto actualizado exitosamente: {producto.nombre} (ID: {producto.id})")
+                    
+                    return Response(serializer.data)
+                else:
+                    logger.error(f"Serializer no es válido. Errores: {serializer.errors}")
+                    return Response({
+                        'error': 'Datos inválidos',
+                        'details': serializer.errors
+                    }, status=status.HTTP_400_BAD_REQUEST)
                 
         except ValidationError as e:
             logger.error(f"Error de validación al actualizar producto: {e}")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            logger.error(f"Error inesperado al actualizar producto: {e}")
+            logger.error(f"Error inesperado al actualizar producto: {e}", exc_info=True)
             return Response({
-                'error': 'Error interno del servidor'
+                'error': 'Error interno del servidor',
+                'details': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, *args, **kwargs):
         """Eliminación lógica del producto"""
         try:
+            logger.info(f"Iniciando eliminación de producto. Usuario: {request.user.username}")
+            logger.info(f"ID del producto a eliminar: {kwargs.get('pk')}")
+            
             instance = self.get_object()
+            logger.info(f"Producto encontrado: {instance.nombre} (ID: {instance.id})")
+            
             instance.activo = False
             instance.save(update_fields=['activo'])
             
-            logger.info(f"Producto desactivado: {instance.nombre} por usuario {request.user.username}")
+            logger.info(f"Producto desactivado exitosamente: {instance.nombre} por usuario {request.user.username}")
             
             return Response({
                 'message': 'Producto eliminado exitosamente'
             }, status=status.HTTP_204_NO_CONTENT)
             
         except Exception as e:
-            logger.error(f"Error al eliminar producto: {e}")
+            logger.error(f"Error al eliminar producto: {e}", exc_info=True)
             return Response({
-                'error': 'Error interno del servidor'
+                'error': 'Error interno del servidor',
+                'details': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['get'], url_path='descargar-ot')
