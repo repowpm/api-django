@@ -33,17 +33,25 @@ class ProductoSerializer(serializers.ModelSerializer):
 
     def validate_nombre(self, value):
         """Validación personalizada para el nombre"""
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Validando nombre: '{value}' (tipo: {type(value)})")
+        
         if not value or not value.strip():
+            logger.error(f"Nombre vacío: '{value}'")
             raise serializers.ValidationError("El nombre no puede estar vacío")
         
         # Verificar que no exista otro producto con el mismo nombre
         if self.instance is None:  # Creando nuevo producto
             if Producto.objects.filter(nombre__iexact=value.strip()).exists():
+                logger.error(f"Nombre duplicado: '{value.strip()}'")
                 raise serializers.ValidationError("Ya existe un producto con este nombre")
         else:  # Actualizando producto existente
             if Producto.objects.filter(nombre__iexact=value.strip()).exclude(id=self.instance.id).exists():
+                logger.error(f"Nombre duplicado: '{value.strip()}'")
                 raise serializers.ValidationError("Ya existe un producto con este nombre")
         
+        logger.info(f"Nombre válido: '{value.strip()}'")
         return value.strip()
 
     def validate_precio(self, value):
@@ -66,16 +74,28 @@ class ProductoSerializer(serializers.ModelSerializer):
 
     def validate_stock(self, value):
         """Validación personalizada para el stock"""
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Validando stock: {value} (tipo: {type(value)})")
+        
         if value is not None and value < 0:
+            logger.error(f"Stock inválido: {value} < 0")
             raise serializers.ValidationError("El stock no puede ser negativo")
         
+        logger.info(f"Stock válido: {value}")
         return value
 
     def validate_numero_ot(self, value):
         """Validación personalizada para el número de OT"""
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Validando numero_ot: {value} (tipo: {type(value)})")
+        
         if value is not None and value <= 0:
+            logger.error(f"Número OT inválido: {value} <= 0")
             raise serializers.ValidationError("El número de OT debe ser mayor a 0")
         
+        logger.info(f"Número OT válido: {value}")
         return value
 
     def validate(self, data):
