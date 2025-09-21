@@ -68,34 +68,56 @@ class ProductoViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Crear producto con manejo de PDF"""
         try:
+            logger.info(f"Iniciando creación de producto. Usuario: {request.user.username}")
+            logger.info(f"Datos recibidos: {request.data}")
+            logger.info(f"Archivos recibidos: {request.FILES}")
+            
             with transaction.atomic():
                 data = request.data.copy()
                 pdf_file = request.FILES.get('orden_trabajo_pdf')
                 
+                logger.info(f"PDF file: {pdf_file}")
+                
                 if pdf_file:
+                    logger.info(f"Procesando archivo PDF. Tamaño: {pdf_file.size}")
                     # Validar tamaño del archivo
                     if pdf_file.size > 10 * 1024 * 1024:  # 10MB
+                        logger.warning(f"Archivo PDF demasiado grande: {pdf_file.size} bytes")
                         return Response({
                             'error': 'El archivo PDF no puede ser mayor a 10MB'
                         }, status=status.HTTP_400_BAD_REQUEST)
                     
                     data['orden_trabajo_pdf'] = pdf_file.read()
+                    logger.info("PDF leído y agregado a data")
+                else:
+                    logger.info("No se envió archivo PDF")
+                
+                logger.info(f"Datos finales para serializer: {data}")
                 
                 serializer = self.get_serializer(data=data)
-                serializer.is_valid(raise_exception=True)
-                producto = serializer.save()
+                logger.info(f"Serializer creado: {type(serializer).__name__}")
                 
-                logger.info(f"Producto creado: {producto.nombre} por usuario {request.user.username}")
-                
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                if serializer.is_valid():
+                    logger.info("Serializer es válido, guardando producto...")
+                    producto = serializer.save()
+                    logger.info(f"Producto creado exitosamente: {producto.nombre} (ID: {producto.id})")
+                    
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                else:
+                    logger.error(f"Serializer no es válido. Errores: {serializer.errors}")
+                    return Response({
+                        'error': 'Datos inválidos',
+                        'details': serializer.errors
+                    }, status=status.HTTP_400_BAD_REQUEST)
                 
         except ValidationError as e:
             logger.error(f"Error de validación al crear producto: {e}")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            logger.error(f"Error inesperado al crear producto: {e}")
+            logger.error(f"Error inesperado al crear producto: {e}", exc_info=True)
             return Response({
-                'error': 'Error interno del servidor'
+                'error': 'Error interno del servidor',
+                'details': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def update(self, request, *args, **kwargs):

@@ -92,12 +92,30 @@ class ProductoCreateSerializer(ProductoSerializer):
     def create(self, validated_data):
         """Crear producto con validaciones adicionales"""
         try:
+            import logging
+            logger = logging.getLogger(__name__)
+            
+            logger.info(f"ProductoCreateSerializer.create - validated_data: {validated_data}")
+            
             # Si no hay PDF, asegurar que el campo sea None
             if 'orden_trabajo_pdf' in validated_data and validated_data['orden_trabajo_pdf'] is None:
                 validated_data['orden_trabajo_pdf'] = None
-            return super().create(validated_data)
+                logger.info("Campo orden_trabajo_pdf establecido como None")
+            
+            logger.info("Llamando a super().create()...")
+            result = super().create(validated_data)
+            logger.info(f"Producto creado exitosamente: {result}")
+            return result
         except ValidationError as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"ValidationError en ProductoCreateSerializer: {e}")
             raise serializers.ValidationError(e.message_dict if hasattr(e, 'message_dict') else str(e))
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error inesperado en ProductoCreateSerializer: {e}", exc_info=True)
+            raise
 
 class ProductoUpdateSerializer(ProductoSerializer):
     """Serializer específico para actualizar productos"""
