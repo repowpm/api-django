@@ -40,8 +40,15 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const result = await authService.login(username, password);
-      setUser(result.data);
-      return { success: true };
+      if (result.success) {
+        setUser(result.data);
+        return { success: true };
+      } else {
+        return { 
+          success: false, 
+          error: result.error || 'Error al iniciar sesión' 
+        };
+      }
     } catch (error) {
       console.error('Error en login:', error);
       return { 
