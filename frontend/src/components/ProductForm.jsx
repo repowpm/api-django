@@ -93,13 +93,13 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
       });
 
       if (editingProduct) {
-        await productService.updateProduct(editingProduct.id, productData);
+        const updatedProduct = await productService.updateProduct(editingProduct.id, productData);
         toast.success('Producto actualizado exitosamente');
-        onProductUpdated();
+        onProductUpdated(updatedProduct);
       } else {
-        await productService.createProduct(productData);
+        const newProduct = await productService.createProduct(productData);
         toast.success('Producto creado exitosamente');
-        onProductAdded();
+        onProductAdded(newProduct);
       }
 
       // Limpiar formulario

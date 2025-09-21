@@ -5,7 +5,7 @@ import ExportButtons from './ExportButtons';
 import EditProductModal from './EditProductModal';
 import toast from 'react-hot-toast';
 
-const ProductList = ({ onProductEdit, refreshTrigger }) => {
+const ProductList = ({ onProductEdit, refreshTrigger, onProductAdded }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,10 +54,51 @@ const ProductList = ({ onProductEdit, refreshTrigger }) => {
     }
   };
 
+  // Función para agregar un producto directamente al estado (sin recargar)
+  const addProductToState = (newProduct) => {
+    setProducts(prevProducts => {
+      // Verificar si el producto ya existe (por ID)
+      const exists = prevProducts.some(product => product.id === newProduct.id);
+      if (exists) {
+        return prevProducts; // No agregar si ya existe
+      }
+      
+      // Agregar el nuevo producto al inicio de la lista
+      return [newProduct, ...prevProducts];
+    });
+  };
+
+  // Función para actualizar un producto en el estado
+  const updateProductInState = (updatedProduct) => {
+    setProducts(prevProducts => 
+      prevProducts.map(product => 
+        product.id === updatedProduct.id ? updatedProduct : product
+      )
+    );
+  };
+
+  // Función para eliminar un producto del estado
+  const removeProductFromState = (productId) => {
+    setProducts(prevProducts => 
+      prevProducts.filter(product => product.id !== productId)
+    );
+  };
+
   useEffect(() => {
     loadProducts();
     setCurrentPage(1); // Resetear a la primera página cuando cambie la búsqueda
   }, [searchTerm, filters, refreshTrigger]);
+
+  // Exponer las funciones para que puedan ser llamadas desde el componente padre
+  useEffect(() => {
+    if (onProductAdded) {
+      onProductAdded({
+        addProduct: addProductToState,
+        updateProduct: updateProductInState,
+        removeProduct: removeProductFromState
+      });
+    }
+  }, [onProductAdded]);
 
   const handleDelete = async (id) => {
     // Mostrar toast de confirmación personalizado
@@ -93,7 +134,7 @@ const ProductList = ({ onProductEdit, refreshTrigger }) => {
       try {
         await productService.deleteProduct(id);
         toast.success('Producto eliminado exitosamente');
-        loadProducts();
+        removeProductFromState(id);
       } catch (error) {
         console.error('Error al eliminar producto:', error);
         toast.error('Error al eliminar el producto');
@@ -145,8 +186,8 @@ const ProductList = ({ onProductEdit, refreshTrigger }) => {
     setEditingProduct(null);
   };
 
-  const handleProductUpdated = () => {
-    loadProducts();
+  const handleProductUpdated = (updatedProduct) => {
+    updateProductInState(updatedProduct);
     setShowEditModal(false);
     setEditingProduct(null);
   };

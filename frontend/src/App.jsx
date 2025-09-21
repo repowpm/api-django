@@ -14,13 +14,26 @@ import toast from 'react-hot-toast';
 const Dashboard = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [productListFunctions, setProductListFunctions] = useState(null);
 
-  const handleProductAdded = () => {
-    setRefreshTrigger(prev => prev + 1);
+  const handleProductAdded = (newProduct) => {
+    // Si tenemos las funciones del ProductList, usarlas para agregar directamente
+    if (productListFunctions?.addProduct) {
+      productListFunctions.addProduct(newProduct);
+    } else {
+      // Fallback: recargar la lista
+      setRefreshTrigger(prev => prev + 1);
+    }
   };
 
-  const handleProductUpdated = () => {
-    setRefreshTrigger(prev => prev + 1);
+  const handleProductUpdated = (updatedProduct) => {
+    // Si tenemos las funciones del ProductList, usarlas para actualizar directamente
+    if (productListFunctions?.updateProduct) {
+      productListFunctions.updateProduct(updatedProduct);
+    } else {
+      // Fallback: recargar la lista
+      setRefreshTrigger(prev => prev + 1);
+    }
     setEditingProduct(null);
   };
 
@@ -49,6 +62,7 @@ const Dashboard = () => {
             <ProductList
               onProductEdit={handleProductEdit}
               refreshTrigger={refreshTrigger}
+              onProductAdded={setProductListFunctions}
             />
           </div>
         </div>
