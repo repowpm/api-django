@@ -1,0 +1,130 @@
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './components/Login';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import ProductForm from './components/ProductForm';
+import ProductList from './components/ProductList';
+import { productService } from './services/api';
+import toast from 'react-hot-toast';
+
+// Componente para la vista principal (dashboard)
+const Dashboard = () => {
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleProductAdded = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleProductUpdated = () => {
+    setRefreshTrigger(prev => prev + 1);
+    setEditingProduct(null);
+  };
+
+  const handleProductEdit = (product) => {
+    setEditingProduct(product);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Formulario de productos - Lado izquierdo */}
+          <div className="lg:sticky lg:top-8 lg:h-fit">
+            <ProductForm
+              onProductAdded={handleProductAdded}
+              onProductUpdated={handleProductUpdated}
+              editingProduct={editingProduct}
+              setEditingProduct={setEditingProduct}
+            />
+          </div>
+
+          {/* Lista de productos - Lado derecho */}
+          <div>
+            <ProductList
+              onProductEdit={handleProductEdit}
+              refreshTrigger={refreshTrigger}
+            />
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+// Componente para rutas protegidas
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
+
+// Componente principal de la aplicación
+const AppContent = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
+  );
+};
+
+// Componente raíz con providers
+const App = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10B981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: '#EF4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+    </AuthProvider>
+  );
+};
+
+export default App;
