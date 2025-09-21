@@ -12,12 +12,8 @@ from .auth_views import (
     logout_user,
     user_profile
 )
+from .health_views import health_check, simple_ping, status_check
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def health_check(request):
-    """Endpoint de prueba para verificar que la API funciona"""
-    return Response({'status': 'OK', 'message': 'API funcionando correctamente'})
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -60,8 +56,10 @@ urlpatterns = [
     # Rutas de productos
     path('', include(router.urls)),
     
-    # Endpoint de prueba
+    # Health check endpoints para monitoreo
     path('health/', health_check, name='health_check'),
+    path('ping/', simple_ping, name='simple_ping'),
+    path('status/', status_check, name='status_check'),
     path('create-admin/', create_admin_user, name='create_admin'),
     
     # Rutas de autenticación
