@@ -60,15 +60,47 @@ const ProductList = ({ onProductEdit, refreshTrigger }) => {
   }, [searchTerm, filters, refreshTrigger]);
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+    // Mostrar toast de confirmación personalizado
+    const confirmDelete = () => {
+      toast((t) => (
+        <div className="flex flex-col space-y-2">
+          <span className="text-white">¿Estás seguro de que quieres eliminar este producto?</span>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                executeDelete(id);
+              }}
+              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+            >
+              Eliminar
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ), {
+        duration: 10000, // 10 segundos para dar tiempo a decidir
+        id: `delete-confirm-${id}` // ID único para evitar duplicados
+      });
+    };
+
+    const executeDelete = async (id) => {
       try {
         await productService.deleteProduct(id);
         toast.success('Producto eliminado exitosamente');
         loadProducts();
       } catch (error) {
         console.error('Error al eliminar producto:', error);
+        toast.error('Error al eliminar el producto');
       }
-    }
+    };
+
+    confirmDelete();
   };
 
   const handleDownloadPDF = async (product) => {

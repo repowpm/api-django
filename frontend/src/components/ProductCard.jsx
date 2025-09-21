@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const ProductCard = ({ product, onEdit, onDelete, onDownloadPDF, onStockChange }) => {
   const [stockAmount, setStockAmount] = useState(1);
@@ -21,7 +22,7 @@ const ProductCard = ({ product, onEdit, onDelete, onDownloadPDF, onStockChange }
 
   const handleStockAction = (action) => {
     if (stockAmount <= 0) {
-      alert('La cantidad debe ser mayor a 0');
+      toast.error('La cantidad debe ser mayor a 0');
       return;
     }
     onStockChange(product, stockAmount, action);
