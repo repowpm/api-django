@@ -13,16 +13,14 @@ services:
       - key: DEBUG
         value: false
       - key: ALLOWED_HOSTS
-        value: productos-api.onrender.com
+        value: api-django-uwx1.onrender.com
       - key: DATABASE_URL
-        fromDatabase:
-          name: productos-db
-          property: connectionString
+        value: postgresql://productos_0maa_user:Y61E0fR8zhpryQe6ZfJyQSHZZLwBkYug@dpg-d37kjdjuibrs7394s5n0-a.oregon-postgres.render.com:5432/productos_0maa
       - key: CORS_ALLOWED_ORIGINS
-        value: https://tu-frontend.vercel.app
+        value: https://api-django-uwx1.onrender.com
 
 databases:
   - name: productos-db
     plan: free
-    databaseName: productos_sirz
-    user: productos_sirz_user
+    databaseName: productos_0maa
+    user: productos_0maa_user
