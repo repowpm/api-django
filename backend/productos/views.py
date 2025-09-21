@@ -74,26 +74,14 @@ class ProductoViewSet(viewsets.ModelViewSet):
             
             with transaction.atomic():
                 # Usar directamente los datos sin copiar para evitar problemas
-                data = request.data
+                data = request.data.copy()
                 pdf_file = request.FILES.get('orden_trabajo_pdf')
                 
                 logger.info(f"PDF file presente: {pdf_file is not None}")
                 
-                if pdf_file:
-                    logger.info(f"Procesando archivo PDF. Tamaño: {pdf_file.size}")
-                    # Validar tamaño del archivo
-                    if pdf_file.size > 10 * 1024 * 1024:  # 10MB
-                        logger.warning(f"Archivo PDF demasiado grande: {pdf_file.size} bytes")
-                        return Response({
-                            'error': 'El archivo PDF no puede ser mayor a 10MB'
-                        }, status=status.HTTP_400_BAD_REQUEST)
-                    
-                    # Leer el archivo y agregarlo a los datos
-                    data = data.copy()
-                    data['orden_trabajo_pdf'] = pdf_file.read()
-                    logger.info("PDF leído y agregado a data")
-                else:
-                    logger.info("No se envió archivo PDF")
+                # Remover el campo PDF de los datos para evitar problemas de validación
+                if 'orden_trabajo_pdf' in data:
+                    del data['orden_trabajo_pdf']
                 
                 logger.info(f"Campos en data: {list(data.keys())}")
                 
@@ -104,6 +92,20 @@ class ProductoViewSet(viewsets.ModelViewSet):
                 if serializer.is_valid():
                     logger.info("Serializer es válido, guardando producto...")
                     producto = serializer.save()
+                    
+                    # Manejar PDF después de crear el producto
+                    if pdf_file:
+                        logger.info(f"Procesando archivo PDF. Tamaño: {pdf_file.size}")
+                        if pdf_file.size > 10 * 1024 * 1024:  # 10MB
+                            logger.warning(f"Archivo PDF demasiado grande: {pdf_file.size} bytes")
+                            return Response({
+                                'error': 'El archivo PDF no puede ser mayor a 10MB'
+                            }, status=status.HTTP_400_BAD_REQUEST)
+                        
+                        producto.orden_trabajo_pdf = pdf_file.read()
+                        producto.save()
+                        logger.info("PDF guardado en el producto")
+                    
                     logger.info(f"Producto creado exitosamente: {producto.nombre} (ID: {producto.id})")
                     
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
