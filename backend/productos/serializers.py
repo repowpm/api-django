@@ -160,12 +160,33 @@ class ProductoUpdateSerializer(ProductoSerializer):
     def update(self, instance, validated_data):
         """Actualizar producto con validaciones adicionales"""
         try:
-            # Si no hay PDF, asegurar que el campo sea None
-            if 'orden_trabajo_pdf' in validated_data and validated_data['orden_trabajo_pdf'] is None:
-                validated_data['orden_trabajo_pdf'] = None
-            return super().update(instance, validated_data)
+            import logging
+            logger = logging.getLogger(__name__)
+            
+            logger.info(f"ProductoUpdateSerializer.update - validated_data keys: {list(validated_data.keys())}")
+            
+            # Remover el campo PDF si está vacío o es None para evitar problemas
+            if 'orden_trabajo_pdf' in validated_data:
+                if validated_data['orden_trabajo_pdf'] is None or validated_data['orden_trabajo_pdf'] == '':
+                    logger.info("Removiendo campo orden_trabajo_pdf vacío")
+                    del validated_data['orden_trabajo_pdf']
+                else:
+                    logger.info(f"PDF presente, tamaño: {len(validated_data['orden_trabajo_pdf']) if isinstance(validated_data['orden_trabajo_pdf'], (bytes, str)) else 'N/A'}")
+            
+            logger.info("Llamando a super().update()...")
+            result = super().update(instance, validated_data)
+            logger.info(f"Producto actualizado exitosamente: {result.id}")
+            return result
         except ValidationError as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"ValidationError en ProductoUpdateSerializer: {e}")
             raise serializers.ValidationError(e.message_dict if hasattr(e, 'message_dict') else str(e))
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error inesperado en ProductoUpdateSerializer: {e}", exc_info=True)
+            raise
 
 class ProductoListSerializer(serializers.ModelSerializer):
     """Serializer simplificado para listar productos"""
