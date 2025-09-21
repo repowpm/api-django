@@ -83,7 +83,7 @@ class ProductoSerializer(serializers.ModelSerializer):
 class ProductoCreateSerializer(ProductoSerializer):
     """Serializer específico para crear productos"""
     # Sobrescribir el campo para permitir escritura en creación
-    orden_trabajo_pdf = serializers.BinaryField(required=False, allow_null=True)
+    orden_trabajo_pdf = serializers.FileField(required=False, allow_null=True)
     
     class Meta(ProductoSerializer.Meta):
         # Remover campos de solo lectura para creación
@@ -99,7 +99,7 @@ class ProductoCreateSerializer(ProductoSerializer):
 class ProductoUpdateSerializer(ProductoSerializer):
     """Serializer específico para actualizar productos"""
     # Sobrescribir el campo para permitir escritura en actualización
-    orden_trabajo_pdf = serializers.BinaryField(required=False, allow_null=True)
+    orden_trabajo_pdf = serializers.FileField(required=False, allow_null=True)
     
     class Meta(ProductoSerializer.Meta):
         # Remover campos de solo lectura para actualización
