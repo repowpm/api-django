@@ -46,10 +46,44 @@ CACHES = {
     }
 }
 
-# Configuración de logging para producción
-LOGGING['handlers']['file']['filename'] = '/var/log/django/django.log'
-LOGGING['loggers']['django']['level'] = 'WARNING'
-LOGGING['loggers']['productos']['level'] = 'INFO'
+# Configuración de logging para producción (solo consola)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'productos': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
 
 # Configuración de email para producción
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
