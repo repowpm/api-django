@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: productos-api
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py migrate
+    startCommand: gunicorn mi_proyecto.wsgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: mi_proyecto.settings_prod
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_HOSTS
+        value: productos-api.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: productos-db
+          property: connectionString
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://tu-frontend.vercel.app
+
+databases:
+  - name: productos-db
+    plan: free
+    databaseName: productos_sirz
+    user: productos_sirz_user
