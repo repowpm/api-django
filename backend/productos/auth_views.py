@@ -20,18 +20,21 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     """
     def post(self, request, *args, **kwargs):
         try:
+            logger.info(f"Intento de login para usuario: {request.data.get('username')}")
             response = super().post(request, *args, **kwargs)
             
             if response.status_code == 200:
                 username = request.data.get('username')
                 logger.info(f"Login exitoso para usuario: {username}")
+            else:
+                logger.warning(f"Login fallido: {response.data}")
             
             return response
             
         except Exception as e:
-            logger.error(f"Error en login: {e}")
+            logger.error(f"Error en login: {e}", exc_info=True)
             return Response({
-                'error': 'Error interno del servidor'
+                'error': f'Error interno del servidor: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
