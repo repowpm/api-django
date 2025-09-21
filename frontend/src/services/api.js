@@ -51,10 +51,18 @@ api.interceptors.response.use(
       // Mostrar detalles del error de validación
       const details = error.response.data.details;
       if (typeof details === 'object') {
-        const errorMessages = Object.entries(details).map(([field, errors]) => 
-          `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`
-        ).join('; ');
-        toast.error(`Error de validación: ${errorMessages}`);
+        // Manejar errores específicos
+        if (details.nombre && details.nombre.includes('Ya existe un producto con este nombre')) {
+          toast.error('Ya existe un producto con este nombre. Por favor, usa un nombre diferente.');
+        } else {
+          const errorMessages = Object.entries(details).map(([field, errors]) => {
+            if (field === 'nombre' && Array.isArray(errors) && errors.includes('Ya existe un producto con este nombre')) {
+              return 'Ya existe un producto con este nombre';
+            }
+            return `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`;
+          }).join('; ');
+          toast.error(`Error de validación: ${errorMessages}`);
+        }
       } else {
         toast.error(`Error: ${details}`);
       }

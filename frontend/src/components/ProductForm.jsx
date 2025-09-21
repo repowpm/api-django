@@ -115,6 +115,38 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
       
     } catch (error) {
       console.error('Error al guardar producto:', error);
+      
+      // Manejo específico de errores
+      if (error.response?.status === 400) {
+        const details = error.response.data?.details;
+        if (details?.nombre && details.nombre.includes('Ya existe un producto con este nombre')) {
+          // Sugerir un nombre alternativo
+          const nombreActual = formData.nombre;
+          const nombreSugerido = `${nombreActual} (${new Date().getTime().toString().slice(-4)})`;
+          toast.error(`Ya existe un producto con este nombre. Sugerencia: "${nombreSugerido}"`, {
+            duration: 5000,
+            action: {
+              label: 'Usar sugerencia',
+              onClick: () => {
+                setFormData(prev => ({ ...prev, nombre: nombreSugerido }));
+              }
+            }
+          });
+        } else if (details) {
+          // Mostrar errores específicos de validación
+          const errorMessages = Object.entries(details).map(([field, errors]) => {
+            if (field === 'nombre' && Array.isArray(errors) && errors.includes('Ya existe un producto con este nombre')) {
+              return 'Ya existe un producto con este nombre';
+            }
+            return `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`;
+          }).join('; ');
+          toast.error(`Error de validación: ${errorMessages}`);
+        } else {
+          toast.error('Error al guardar el producto. Verifica los datos ingresados.');
+        }
+      } else {
+        toast.error('Error al guardar el producto. Inténtalo más tarde.');
+      }
     } finally {
       setIsLoading(false);
     }
