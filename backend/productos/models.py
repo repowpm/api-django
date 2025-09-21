@@ -6,12 +6,18 @@ import os
 def validate_pdf_file(value):
     """Validador para archivos PDF"""
     if value:
+        # Convertir a bytes si es memoryview
+        if hasattr(value, 'tobytes'):
+            value_bytes = value.tobytes()
+        else:
+            value_bytes = value
+        
         # Verificar que el archivo no sea demasiado grande (10MB)
-        if len(value) > 10 * 1024 * 1024:
+        if len(value_bytes) > 10 * 1024 * 1024:
             raise ValidationError('El archivo PDF no puede ser mayor a 10MB')
         
         # Verificar que sea un PDF (verificación básica)
-        if not value.startswith(b'%PDF'):
+        if not value_bytes.startswith(b'%PDF'):
             raise ValidationError('El archivo debe ser un PDF válido')
 
 class Producto(models.Model):
