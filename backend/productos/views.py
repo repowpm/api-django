@@ -69,20 +69,20 @@ class ProductoViewSet(viewsets.ModelViewSet):
         """Crear producto con manejo de PDF"""
         try:
             with transaction.atomic():
-        data = request.data.copy()
-        pdf_file = request.FILES.get('orden_trabajo_pdf')
+                data = request.data.copy()
+                pdf_file = request.FILES.get('orden_trabajo_pdf')
                 
-        if pdf_file:
+                if pdf_file:
                     # Validar tamaño del archivo
                     if pdf_file.size > 10 * 1024 * 1024:  # 10MB
                         return Response({
                             'error': 'El archivo PDF no puede ser mayor a 10MB'
                         }, status=status.HTTP_400_BAD_REQUEST)
                     
-            data['orden_trabajo_pdf'] = pdf_file.read()
+                    data['orden_trabajo_pdf'] = pdf_file.read()
                 
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
+                serializer = self.get_serializer(data=data)
+                serializer.is_valid(raise_exception=True)
                 producto = serializer.save()
                 
                 logger.info(f"Producto creado: {producto.nombre} por usuario {request.user.username}")
