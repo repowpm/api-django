@@ -156,7 +156,7 @@ class ProductoViewSet(viewsets.ModelViewSet):
     def descargar_ot(self, request, pk=None):
         """Descargar PDF de orden de trabajo"""
         try:
-        producto = self.get_object()
+            producto = self.get_object()
             
             if not producto.orden_trabajo_pdf:
                 return Response({
