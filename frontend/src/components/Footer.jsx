@@ -9,7 +9,7 @@ const Footer = () => {
             © 2025 Sistema de Gestión de Productos
           </div>
           <div className="text-sm text-gray-400 mt-2 sm:mt-0">
-            Desarrollado con React + Django
+            Desarrollado por Walter Paredes @2025
           </div>
         </div>
       </div>
