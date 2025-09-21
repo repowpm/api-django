@@ -56,6 +56,12 @@ const ProductList = ({ onProductEdit, refreshTrigger, onProductAdded }) => {
 
   // Función para agregar un producto directamente al estado (sin recargar)
   const addProductToState = (newProduct) => {
+    // Validar que newProduct existe y tiene id
+    if (!newProduct || !newProduct.id) {
+      console.error('addProductToState: newProduct inválido:', newProduct);
+      return;
+    }
+    
     setProducts(prevProducts => {
       // Verificar si el producto ya existe (por ID)
       const exists = prevProducts.some(product => product.id === newProduct.id);
@@ -70,6 +76,12 @@ const ProductList = ({ onProductEdit, refreshTrigger, onProductAdded }) => {
 
   // Función para actualizar un producto en el estado
   const updateProductInState = (updatedProduct) => {
+    // Validar que updatedProduct existe y tiene id
+    if (!updatedProduct || !updatedProduct.id) {
+      console.error('updateProductInState: updatedProduct inválido:', updatedProduct);
+      return;
+    }
+    
     setProducts(prevProducts => 
       prevProducts.map(product => 
         product.id === updatedProduct.id ? updatedProduct : product

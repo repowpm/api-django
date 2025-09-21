@@ -78,9 +78,9 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         tiene_nuevo_pdf: !!formData.orden_trabajo_pdf
       });
 
-      await productService.updateProduct(product.id, productData);
+      const updatedProduct = await productService.updateProduct(product.id, productData);
       toast.success('Producto actualizado exitosamente');
-      onProductUpdated();
+      onProductUpdated(updatedProduct);
       onClose();
       
     } catch (error) {
