@@ -69,20 +69,20 @@ class ProductoViewSet(viewsets.ModelViewSet):
         """Crear producto con manejo de PDF"""
         try:
             with transaction.atomic():
-                data = request.data.copy()
-                pdf_file = request.FILES.get('orden_trabajo_pdf')
+        data = request.data.copy()
+        pdf_file = request.FILES.get('orden_trabajo_pdf')
                 
-                if pdf_file:
+        if pdf_file:
                     # Validar tamaño del archivo
                     if pdf_file.size > 10 * 1024 * 1024:  # 10MB
                         return Response({
                             'error': 'El archivo PDF no puede ser mayor a 10MB'
                         }, status=status.HTTP_400_BAD_REQUEST)
                     
-                    data['orden_trabajo_pdf'] = pdf_file.read()
+            data['orden_trabajo_pdf'] = pdf_file.read()
                 
-                serializer = self.get_serializer(data=data)
-                serializer.is_valid(raise_exception=True)
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
                 producto = serializer.save()
                 
                 logger.info(f"Producto creado: {producto.nombre} por usuario {request.user.username}")
@@ -102,27 +102,32 @@ class ProductoViewSet(viewsets.ModelViewSet):
         """Actualizar producto con manejo de PDF"""
         try:
             with transaction.atomic():
-                instance = self.get_object()
-                data = request.data.copy()
-                pdf_file = request.FILES.get('orden_trabajo_pdf')
+        instance = self.get_object()
+        data = request.data.copy()
+        pdf_file = request.FILES.get('orden_trabajo_pdf')
                 
-                if pdf_file:
+                # Solo actualizar PDF si se envía un nuevo archivo
+        if pdf_file:
                     # Validar tamaño del archivo
                     if pdf_file.size > 10 * 1024 * 1024:  # 10MB
                         return Response({
                             'error': 'El archivo PDF no puede ser mayor a 10MB'
                         }, status=status.HTTP_400_BAD_REQUEST)
                     
-                    data['orden_trabajo_pdf'] = pdf_file.read()
+            data['orden_trabajo_pdf'] = pdf_file.read()
+                else:
+                    # Si no se envía archivo, mantener el PDF existente solo si existe
+                    if 'orden_trabajo_pdf' not in data and instance.orden_trabajo_pdf:
+                        data['orden_trabajo_pdf'] = instance.orden_trabajo_pdf
                 
                 partial = kwargs.pop('partial', False)
-                serializer = self.get_serializer(instance, data=data, partial=partial)
-                serializer.is_valid(raise_exception=True)
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
                 producto = serializer.save()
                 
                 logger.info(f"Producto actualizado: {producto.nombre} por usuario {request.user.username}")
                 
-                return Response(serializer.data)
+        return Response(serializer.data)
                 
         except ValidationError as e:
             logger.error(f"Error de validación al actualizar producto: {e}")
@@ -156,7 +161,7 @@ class ProductoViewSet(viewsets.ModelViewSet):
     def descargar_ot(self, request, pk=None):
         """Descargar PDF de orden de trabajo"""
         try:
-            producto = self.get_object()
+        producto = self.get_object()
             
             if not producto.orden_trabajo_pdf:
                 return Response({

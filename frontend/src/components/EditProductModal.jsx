@@ -18,7 +18,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
     if (product && isOpen) {
       setFormData({
         nombre: product.nombre || '',
-        precio: product.precio || '',
+        precio: product.precio ? Math.round(product.precio) : '',
         descripcion: product.descripcion || '',
         stock: product.stock || '',
         numero_ot: product.numero_ot || '',
@@ -58,11 +58,25 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
     try {
       const productData = new FormData();
       productData.append('nombre', formData.nombre);
-      productData.append('precio', formData.precio);
+      // Asegurar que el precio se envíe como número
+      productData.append('precio', parseFloat(formData.precio));
       if (formData.descripcion) productData.append('descripcion', formData.descripcion);
-      if (formData.stock) productData.append('stock', formData.stock);
-      if (formData.numero_ot) productData.append('numero_ot', formData.numero_ot);
-      if (formData.orden_trabajo_pdf) productData.append('orden_trabajo_pdf', formData.orden_trabajo_pdf);
+      if (formData.stock) productData.append('stock', parseInt(formData.stock));
+      if (formData.numero_ot) productData.append('numero_ot', parseInt(formData.numero_ot));
+      
+      // Solo enviar PDF si se ha seleccionado un nuevo archivo
+      if (formData.orden_trabajo_pdf) {
+        productData.append('orden_trabajo_pdf', formData.orden_trabajo_pdf);
+      }
+
+      console.log('Enviando datos de actualización:', {
+        nombre: formData.nombre,
+        precio: parseFloat(formData.precio),
+        descripcion: formData.descripcion,
+        stock: formData.stock ? parseInt(formData.stock) : null,
+        numero_ot: formData.numero_ot ? parseInt(formData.numero_ot) : null,
+        tiene_nuevo_pdf: !!formData.orden_trabajo_pdf
+      });
 
       await productService.updateProduct(product.id, productData);
       toast.success('Producto actualizado exitosamente');
@@ -133,19 +147,19 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
               <label htmlFor="edit_precio" className="block text-sm font-medium text-gray-300">
                 Precio *
               </label>
-              <input
-                type="number"
-                id="edit_precio"
-                name="precio"
-                step="0.01"
-                min="0.01"
-                required
-                className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 mt-1"
-                value={formData.precio}
-                onChange={handleChange}
-                disabled={isLoading}
-                placeholder="0.00"
-              />
+            <input
+              type="number"
+              id="edit_precio"
+              name="precio"
+              step="1"
+              min="1"
+              required
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 mt-1"
+              value={formData.precio}
+              onChange={handleChange}
+              disabled={isLoading}
+              placeholder="0"
+            />
             </div>
           </div>
 
@@ -205,6 +219,13 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
             <label htmlFor="edit_orden_trabajo_pdf" className="block text-sm font-medium text-gray-300">
               PDF Orden de Trabajo
             </label>
+            {product && product.tiene_pdf && (
+              <div className="mb-2 p-2 bg-green-900 border border-green-700 rounded-md">
+                <p className="text-sm text-green-300">
+                  ✓ Este producto ya tiene un PDF cargado
+                </p>
+              </div>
+            )}
             <input
               type="file"
               id="edit_orden_trabajo_pdf"
@@ -215,7 +236,10 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
               disabled={isLoading}
             />
             <p className="mt-1 text-xs text-gray-400">
-              Solo archivos PDF, máximo 10MB
+              {product && product.tiene_pdf 
+                ? 'Selecciona un nuevo archivo para reemplazar el PDF actual, o deja vacío para mantener el existente'
+                : 'Solo archivos PDF, máximo 10MB'
+              }
             </p>
           </div>
 

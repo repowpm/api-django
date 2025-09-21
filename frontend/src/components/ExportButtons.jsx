@@ -28,7 +28,7 @@ const ExportButtons = ({ products, tableRef }) => {
         worksheet.addRow({
           id: product.id,
           nombre: product.nombre,
-          precio: product.precio,
+          precio: Math.round(product.precio),
           descripcion: product.descripcion || '',
           stock: product.stock || 0,
           numero_ot: product.numero_ot || '',

@@ -15,7 +15,8 @@ const ProductList = ({ onProductEdit, refreshTrigger }) => {
   });
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [viewMode, setViewMode] = useState('cards'); // 'cards' o 'table'
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // Máximo 10 productos por página
   const tableRef = useRef(null);
 
   const loadProducts = async () => {
@@ -55,6 +56,7 @@ const ProductList = ({ onProductEdit, refreshTrigger }) => {
 
   useEffect(() => {
     loadProducts();
+    setCurrentPage(1); // Resetear a la primera página cuando cambie la búsqueda
   }, [searchTerm, filters, refreshTrigger]);
 
   const handleDelete = async (id) => {
@@ -132,11 +134,33 @@ const ProductList = ({ onProductEdit, refreshTrigger }) => {
     });
   };
 
+  // Lógica de paginación
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentProducts = products.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {/* Barra de búsqueda y filtros */}
+      {/* Barra de búsqueda */}
       <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <input
               type="text"
@@ -145,56 +169,6 @@ const ProductList = ({ onProductEdit, refreshTrigger }) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div>
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex gap-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={filters.con_stock}
-                  onChange={(e) => setFilters({...filters, con_stock: e.target.checked})}
-                  className="rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-700"
-                />
-                <span className="ml-2 text-sm text-gray-300">Con stock</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={filters.con_pdf}
-                  onChange={(e) => setFilters({...filters, con_pdf: e.target.checked})}
-                  className="rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-700"
-                />
-                <span className="ml-2 text-sm text-gray-300">Con PDF</span>
-              </label>
-            </div>
-            
-            {/* Botones de cambio de vista */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setViewMode('cards')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'cards' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setViewMode('table')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'table' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0V4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V10z" />
-                </svg>
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -211,103 +185,112 @@ const ProductList = ({ onProductEdit, refreshTrigger }) => {
           </svg>
           <h3 className="mt-2 text-sm font-medium text-white">No hay productos</h3>
           <p className="mt-1 text-sm text-gray-400">
-            {searchTerm || filters.con_stock || filters.con_pdf 
-              ? 'No se encontraron productos con los filtros aplicados.'
+            {searchTerm 
+              ? 'No se encontraron productos con el término de búsqueda.'
               : 'Comienza agregando un nuevo producto.'
             }
           </p>
         </div>
-      ) : viewMode === 'table' ? (
+      ) : (
         <div className="space-y-4">
           {/* Botones de exportación */}
           <ExportButtons products={products} tableRef={tableRef} />
           
           {/* Tabla de productos */}
-          <div className="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table ref={tableRef} className="min-w-full divide-y divide-gray-700">
+          <div className="bg-gray-800 rounded-lg shadow-lg border border-gray-700">
+            <div className="overflow-hidden">
+              <table ref={tableRef} className="w-full divide-y divide-gray-700">
                 <thead className="bg-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Producto
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Precio
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Stock
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       OT
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       PDF
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Fecha
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Acciones
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-gray-800 divide-y divide-gray-700">
-                  {products.map((product) => (
+                  {currentProducts.map((product) => (
                     <tr key={product.id} className="hover:bg-gray-700">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4">
                         <div>
-                          <div className="text-sm font-medium text-white">{product.nombre}</div>
+                          <div className="text-sm font-medium text-white truncate max-w-[200px]">{product.nombre}</div>
                           {product.descripcion && (
-                            <div className="text-sm text-gray-400 truncate max-w-xs">
+                            <div className="text-sm text-gray-400 truncate max-w-[200px]">
                               {product.descripcion}
                             </div>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-400 font-medium">
-                        {product.precio_formateado || formatPrice(product.precio)}
+                      <td className="px-4 py-4 text-sm text-blue-400 font-medium">
+                        ${Math.round(product.precio)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4">
                         <span className={`text-sm font-medium ${
                           product.stock > 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
                           {product.stock !== null ? product.stock : 'N/A'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      <td className="px-4 py-4 text-sm text-gray-300">
                         {product.numero_ot || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 text-center">
                         <span className={`text-sm ${
                           product.tiene_pdf ? 'text-green-400' : 'text-gray-500'
                         }`}>
                           {product.tiene_pdf ? 'Sí' : 'No'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      <td className="px-4 py-4 text-sm text-gray-300">
                         {formatDate(product.fecha_creacion)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                      <td className="px-4 py-4 text-center">
+                        <div className="flex justify-center space-x-2">
                           <button
                             onClick={() => handleEdit(product)}
-                            className="text-blue-400 hover:text-blue-300 transition-colors"
+                            className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-900 rounded transition-colors"
+                            title="Editar"
                           >
-                            Editar
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
                           </button>
                           {product.tiene_pdf && (
                             <button
                               onClick={() => handleDownloadPDF(product)}
-                              className="text-purple-400 hover:text-purple-300 transition-colors"
+                              className="p-2 text-purple-400 hover:text-purple-300 hover:bg-purple-900 rounded transition-colors"
+                              title="Descargar PDF"
                             >
-                              PDF
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
                             </button>
                           )}
                           <button
                             onClick={() => handleDelete(product.id)}
-                            className="text-red-400 hover:text-red-300 transition-colors"
+                            className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900 rounded transition-colors"
+                            title="Eliminar"
                           >
-                            Eliminar
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                           </button>
                         </div>
                       </td>
@@ -317,19 +300,50 @@ const ProductList = ({ onProductEdit, refreshTrigger }) => {
               </table>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onDownloadPDF={handleDownloadPDF}
-              onStockChange={handleStockChange}
-            />
-          ))}
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-400">
+                  Mostrando {startIndex + 1} a {Math.min(endIndex, products.length)} de {products.length} productos
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 bg-gray-700 text-gray-300 rounded-md hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Anterior
+                  </button>
+                  
+                  <div className="flex space-x-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                          currentPage === page
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <button
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 bg-gray-700 text-gray-300 rounded-md hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

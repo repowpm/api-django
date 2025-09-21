@@ -38,7 +38,7 @@ const ProductCard = ({ product, onEdit, onDelete, onDownloadPDF, onStockChange }
               {product.nombre}
             </h3>
             <span className="text-lg font-bold text-blue-400">
-              {product.precio_formateado || formatPrice(product.precio)}
+              ${Math.round(product.precio)}
             </span>
           </div>
 

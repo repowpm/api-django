@@ -18,7 +18,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
     if (editingProduct) {
       setFormData({
         nombre: editingProduct.nombre || '',
-        precio: editingProduct.precio || '',
+        precio: editingProduct.precio ? Math.round(editingProduct.precio) : '',
         descripcion: editingProduct.descripcion || '',
         stock: editingProduct.stock || '',
         numero_ot: editingProduct.numero_ot || '',
@@ -77,11 +77,20 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
     try {
       const productData = new FormData();
       productData.append('nombre', formData.nombre);
-      productData.append('precio', formData.precio);
+      // Asegurar que el precio se envíe como número
+      productData.append('precio', parseFloat(formData.precio));
       if (formData.descripcion) productData.append('descripcion', formData.descripcion);
-      if (formData.stock) productData.append('stock', formData.stock);
-      if (formData.numero_ot) productData.append('numero_ot', formData.numero_ot);
+      if (formData.stock) productData.append('stock', parseInt(formData.stock));
+      if (formData.numero_ot) productData.append('numero_ot', parseInt(formData.numero_ot));
       if (formData.orden_trabajo_pdf) productData.append('orden_trabajo_pdf', formData.orden_trabajo_pdf);
+
+      console.log('Enviando datos:', {
+        nombre: formData.nombre,
+        precio: parseFloat(formData.precio),
+        descripcion: formData.descripcion,
+        stock: formData.stock ? parseInt(formData.stock) : null,
+        numero_ot: formData.numero_ot ? parseInt(formData.numero_ot) : null
+      });
 
       if (editingProduct) {
         await productService.updateProduct(editingProduct.id, productData);
@@ -124,9 +133,9 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-white">
+    <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-base font-semibold text-white">
           {editingProduct ? 'Editar Producto' : 'Agregar Producto'}
         </h2>
         {editingProduct && (
@@ -139,8 +148,8 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="space-y-3">
           <div>
             <label htmlFor="nombre" className="block text-sm font-medium text-gray-300">
               Nombre *
@@ -166,35 +175,19 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
               type="number"
               id="precio"
               name="precio"
-              step="0.01"
-              min="0.01"
+              step="1"
+              min="1"
               required
               className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 mt-1"
               value={formData.precio}
               onChange={handleChange}
               disabled={isLoading}
-              placeholder="0.00"
+              placeholder="0"
             />
           </div>
         </div>
 
-        <div>
-          <label htmlFor="descripcion" className="block text-sm font-medium text-gray-300">
-            Descripción
-          </label>
-          <textarea
-            id="descripcion"
-            name="descripcion"
-            rows={3}
-            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 mt-1"
-            value={formData.descripcion}
-            onChange={handleChange}
-            disabled={isLoading}
-            placeholder="Descripción del producto (opcional)"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="stock" className="block text-sm font-medium text-gray-300">
               Stock
@@ -208,7 +201,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
               value={formData.stock}
               onChange={handleChange}
               disabled={isLoading}
-              placeholder="Cantidad en stock"
+              placeholder="Stock"
             />
           </div>
 
@@ -225,7 +218,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
               value={formData.numero_ot}
               onChange={handleChange}
               disabled={isLoading}
-              placeholder="Número de orden de trabajo"
+              placeholder="OT"
             />
           </div>
         </div>
@@ -248,12 +241,12 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
           </p>
         </div>
 
-        <div className="flex justify-end space-x-3 pt-4">
+        <div className="flex justify-end space-x-2 pt-2">
           {editingProduct && (
             <button
               type="button"
               onClick={handleCancel}
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+              className="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors text-sm"
               disabled={isLoading}
             >
               Cancelar
@@ -261,7 +254,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
           )}
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
+            className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm"
             disabled={isLoading}
           >
             {isLoading ? 'Guardando...' : (editingProduct ? 'Actualizar' : 'Agregar')}
