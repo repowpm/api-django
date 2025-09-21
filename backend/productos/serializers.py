@@ -95,16 +95,19 @@ class ProductoCreateSerializer(ProductoSerializer):
             import logging
             logger = logging.getLogger(__name__)
             
-            logger.info(f"ProductoCreateSerializer.create - validated_data: {validated_data}")
+            logger.info(f"ProductoCreateSerializer.create - validated_data keys: {list(validated_data.keys())}")
             
-            # Si no hay PDF, asegurar que el campo sea None
-            if 'orden_trabajo_pdf' in validated_data and validated_data['orden_trabajo_pdf'] is None:
-                validated_data['orden_trabajo_pdf'] = None
-                logger.info("Campo orden_trabajo_pdf establecido como None")
+            # Remover el campo PDF si está vacío o es None para evitar problemas
+            if 'orden_trabajo_pdf' in validated_data:
+                if validated_data['orden_trabajo_pdf'] is None or validated_data['orden_trabajo_pdf'] == '':
+                    logger.info("Removiendo campo orden_trabajo_pdf vacío")
+                    del validated_data['orden_trabajo_pdf']
+                else:
+                    logger.info(f"PDF presente, tamaño: {len(validated_data['orden_trabajo_pdf']) if isinstance(validated_data['orden_trabajo_pdf'], (bytes, str)) else 'N/A'}")
             
             logger.info("Llamando a super().create()...")
             result = super().create(validated_data)
-            logger.info(f"Producto creado exitosamente: {result}")
+            logger.info(f"Producto creado exitosamente: {result.id}")
             return result
         except ValidationError as e:
             import logging

@@ -69,14 +69,15 @@ class ProductoViewSet(viewsets.ModelViewSet):
         """Crear producto con manejo de PDF"""
         try:
             logger.info(f"Iniciando creación de producto. Usuario: {request.user.username}")
-            logger.info(f"Datos recibidos: {request.data}")
-            logger.info(f"Archivos recibidos: {request.FILES}")
+            logger.info(f"Datos recibidos: {dict(request.data)}")
+            logger.info(f"Archivos recibidos: {list(request.FILES.keys())}")
             
             with transaction.atomic():
-                data = request.data.copy()
+                # Usar directamente los datos sin copiar para evitar problemas
+                data = request.data
                 pdf_file = request.FILES.get('orden_trabajo_pdf')
                 
-                logger.info(f"PDF file: {pdf_file}")
+                logger.info(f"PDF file presente: {pdf_file is not None}")
                 
                 if pdf_file:
                     logger.info(f"Procesando archivo PDF. Tamaño: {pdf_file.size}")
@@ -87,16 +88,19 @@ class ProductoViewSet(viewsets.ModelViewSet):
                             'error': 'El archivo PDF no puede ser mayor a 10MB'
                         }, status=status.HTTP_400_BAD_REQUEST)
                     
+                    # Leer el archivo y agregarlo a los datos
+                    data = data.copy()
                     data['orden_trabajo_pdf'] = pdf_file.read()
                     logger.info("PDF leído y agregado a data")
                 else:
                     logger.info("No se envió archivo PDF")
                 
-                logger.info(f"Datos finales para serializer: {data}")
+                logger.info(f"Campos en data: {list(data.keys())}")
                 
                 serializer = self.get_serializer(data=data)
                 logger.info(f"Serializer creado: {type(serializer).__name__}")
                 
+                logger.info("Validando serializer...")
                 if serializer.is_valid():
                     logger.info("Serializer es válido, guardando producto...")
                     producto = serializer.save()
