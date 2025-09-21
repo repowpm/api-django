@@ -111,9 +111,23 @@ class ProductoViewSet(viewsets.ModelViewSet):
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
                 else:
                     logger.error(f"Serializer no es válido. Errores: {serializer.errors}")
+                    # Procesar errores específicos para el usuario
+                    error_messages = []
+                    for field, errors in serializer.errors.items():
+                        if field == 'nombre' and 'Ya existe un producto con este nombre' in str(errors):
+                            error_messages.append('Ya existe un producto con este nombre. Por favor, usa un nombre diferente.')
+                        elif field == 'precio':
+                            error_messages.append('El precio debe ser un número válido mayor a 0.')
+                        elif field == 'stock':
+                            error_messages.append('El stock debe ser un número entero mayor o igual a 0.')
+                        elif field == 'numero_ot':
+                            error_messages.append('El número de OT debe ser un número entero mayor a 0.')
+                        else:
+                            error_messages.append(f'{field}: {errors[0] if isinstance(errors, list) else errors}')
+                    
                     return Response({
                         'error': 'Datos inválidos',
-                        'details': serializer.errors
+                        'details': '; '.join(error_messages) if error_messages else 'Por favor, verifica los datos ingresados'
                     }, status=status.HTTP_400_BAD_REQUEST)
                 
         except ValidationError as e:
@@ -173,9 +187,23 @@ class ProductoViewSet(viewsets.ModelViewSet):
                     return Response(serializer.data)
                 else:
                     logger.error(f"Serializer no es válido. Errores: {serializer.errors}")
+                    # Procesar errores específicos para el usuario
+                    error_messages = []
+                    for field, errors in serializer.errors.items():
+                        if field == 'nombre' and 'Ya existe un producto con este nombre' in str(errors):
+                            error_messages.append('Ya existe un producto con este nombre. Por favor, usa un nombre diferente.')
+                        elif field == 'precio':
+                            error_messages.append('El precio debe ser un número válido mayor a 0.')
+                        elif field == 'stock':
+                            error_messages.append('El stock debe ser un número entero mayor o igual a 0.')
+                        elif field == 'numero_ot':
+                            error_messages.append('El número de OT debe ser un número entero mayor a 0.')
+                        else:
+                            error_messages.append(f'{field}: {errors[0] if isinstance(errors, list) else errors}')
+                    
                     return Response({
                         'error': 'Datos inválidos',
-                        'details': serializer.errors
+                        'details': '; '.join(error_messages) if error_messages else 'Por favor, verifica los datos ingresados'
                     }, status=status.HTTP_400_BAD_REQUEST)
                 
         except ValidationError as e:

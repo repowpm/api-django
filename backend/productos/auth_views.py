@@ -20,21 +20,54 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     """
     def post(self, request, *args, **kwargs):
         try:
-            logger.info(f"Intento de login para usuario: {request.data.get('username')}")
-            response = super().post(request, *args, **kwargs)
+            username = request.data.get('username')
+            password = request.data.get('password')
             
-            if response.status_code == 200:
-                username = request.data.get('username')
-                logger.info(f"Login exitoso para usuario: {username}")
-            else:
-                logger.warning(f"Login fallido: {response.data}")
+            logger.info(f"Intento de login para usuario: {username}")
             
-            return response
+            # Verificar que se proporcionaron las credenciales
+            if not username or not password:
+                return Response({
+                    'error': 'Usuario y contraseña son requeridos'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Intentar autenticación
+            user = authenticate(username=username, password=password)
+            
+            if user is None:
+                logger.warning(f"Credenciales incorrectas para usuario: {username}")
+                return Response({
+                    'error': 'Usuario o contraseña incorrecta, intente nuevamente por favor'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
+            if not user.is_active:
+                logger.warning(f"Usuario inactivo: {username}")
+                return Response({
+                    'error': 'Usuario o contraseña incorrecta, intente nuevamente por favor'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
+            # Generar tokens
+            refresh = RefreshToken.for_user(user)
+            access_token = refresh.access_token
+            
+            logger.info(f"Login exitoso para usuario: {username}")
+            
+            return Response({
+                'access': str(access_token),
+                'refresh': str(refresh),
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name
+                }
+            }, status=status.HTTP_200_OK)
             
         except Exception as e:
             logger.error(f"Error en login: {e}", exc_info=True)
             return Response({
-                'error': f'Error interno del servidor: {str(e)}'
+                'error': 'Error interno del servidor, intente más tarde'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
