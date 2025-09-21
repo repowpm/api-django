@@ -32,6 +32,9 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Log completo del error para debugging
+    console.error('Error completo:', error.response?.data);
+    
     if (error.response?.status === 401) {
       // Token expirado o inválido
       localStorage.removeItem('token');
@@ -44,6 +47,17 @@ api.interceptors.response.use(
       toast.error('Error del servidor. Inténtalo más tarde.');
     } else if (error.response?.data?.error) {
       toast.error(error.response.data.error);
+    } else if (error.response?.data?.details) {
+      // Mostrar detalles del error de validación
+      const details = error.response.data.details;
+      if (typeof details === 'object') {
+        const errorMessages = Object.entries(details).map(([field, errors]) => 
+          `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`
+        ).join('; ');
+        toast.error(`Error de validación: ${errorMessages}`);
+      } else {
+        toast.error(`Error: ${details}`);
+      }
     } else {
       toast.error('Error de conexión. Verifica tu conexión a internet.');
     }
