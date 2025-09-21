@@ -124,7 +124,11 @@ export const productService = {
 
   async createProduct(productData) {
     try {
-      const response = await api.post('/productos/', productData);
+      const response = await api.post('/productos/', productData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -133,7 +137,11 @@ export const productService = {
 
   async updateProduct(id, productData) {
     try {
-      const response = await api.put(`/productos/${id}/`, productData);
+      const response = await api.put(`/productos/${id}/`, productData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return response.data;
     } catch (error) {
       throw error;
