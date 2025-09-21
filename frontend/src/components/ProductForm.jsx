@@ -124,15 +124,15 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
   };
 
   return (
-    <div className="card">
+    <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-lg font-semibold text-white">
           {editingProduct ? 'Editar Producto' : 'Agregar Producto'}
         </h2>
         {editingProduct && (
           <button
             onClick={handleCancel}
-            className="text-sm text-gray-500 hover:text-gray-700"
+            className="text-sm text-gray-400 hover:text-white transition-colors"
           >
             Cancelar
           </button>
@@ -142,7 +142,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="nombre" className="block text-sm font-medium text-gray-300">
               Nombre *
             </label>
             <input
@@ -150,15 +150,16 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
               id="nombre"
               name="nombre"
               required
-              className="input-field mt-1"
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 mt-1"
               value={formData.nombre}
               onChange={handleChange}
               disabled={isLoading}
+              placeholder="Ingrese el nombre del producto"
             />
           </div>
 
           <div>
-            <label htmlFor="precio" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="precio" className="block text-sm font-medium text-gray-300">
               Precio *
             </label>
             <input
@@ -168,32 +169,34 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
               step="0.01"
               min="0.01"
               required
-              className="input-field mt-1"
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 mt-1"
               value={formData.precio}
               onChange={handleChange}
               disabled={isLoading}
+              placeholder="0.00"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="descripcion" className="block text-sm font-medium text-gray-300">
             Descripción
           </label>
           <textarea
             id="descripcion"
             name="descripcion"
             rows={3}
-            className="input-field mt-1"
+            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 mt-1"
             value={formData.descripcion}
             onChange={handleChange}
             disabled={isLoading}
+            placeholder="Descripción del producto (opcional)"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="stock" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="stock" className="block text-sm font-medium text-gray-300">
               Stock
             </label>
             <input
@@ -201,15 +204,16 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
               id="stock"
               name="stock"
               min="0"
-              className="input-field mt-1"
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 mt-1"
               value={formData.stock}
               onChange={handleChange}
               disabled={isLoading}
+              placeholder="Cantidad en stock"
             />
           </div>
 
           <div>
-            <label htmlFor="numero_ot" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="numero_ot" className="block text-sm font-medium text-gray-300">
               Número OT
             </label>
             <input
@@ -217,16 +221,17 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
               id="numero_ot"
               name="numero_ot"
               min="1"
-              className="input-field mt-1"
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 mt-1"
               value={formData.numero_ot}
               onChange={handleChange}
               disabled={isLoading}
+              placeholder="Número de orden de trabajo"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="orden_trabajo_pdf" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="orden_trabajo_pdf" className="block text-sm font-medium text-gray-300">
             PDF Orden de Trabajo
           </label>
           <input
@@ -234,11 +239,11 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
             id="orden_trabajo_pdf"
             name="orden_trabajo_pdf"
             accept=".pdf"
-            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+            className="mt-1 block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-600 file:text-white hover:file:bg-blue-700"
             onChange={handleFileChange}
             disabled={isLoading}
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-400">
             Solo archivos PDF, máximo 10MB
           </p>
         </div>
@@ -248,7 +253,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
             <button
               type="button"
               onClick={handleCancel}
-              className="btn-secondary"
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
               disabled={isLoading}
             >
               Cancelar
@@ -256,7 +261,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
           )}
           <button
             type="submit"
-            className="btn-primary"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
             disabled={isLoading}
           >
             {isLoading ? 'Guardando...' : (editingProduct ? 'Actualizar' : 'Agregar')}
