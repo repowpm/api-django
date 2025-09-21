@@ -83,7 +83,7 @@ class ProductoSerializer(serializers.ModelSerializer):
 class ProductoCreateSerializer(ProductoSerializer):
     """Serializer específico para crear productos"""
     # Sobrescribir el campo para permitir escritura en creación
-    orden_trabajo_pdf = serializers.FileField(required=False, allow_null=True)
+    orden_trabajo_pdf = serializers.FileField(required=False, allow_null=True, allow_empty_file=True)
     
     class Meta(ProductoSerializer.Meta):
         # Remover campos de solo lectura para creación
@@ -92,6 +92,9 @@ class ProductoCreateSerializer(ProductoSerializer):
     def create(self, validated_data):
         """Crear producto con validaciones adicionales"""
         try:
+            # Si no hay PDF, asegurar que el campo sea None
+            if 'orden_trabajo_pdf' in validated_data and validated_data['orden_trabajo_pdf'] is None:
+                validated_data['orden_trabajo_pdf'] = None
             return super().create(validated_data)
         except ValidationError as e:
             raise serializers.ValidationError(e.message_dict if hasattr(e, 'message_dict') else str(e))
@@ -99,7 +102,7 @@ class ProductoCreateSerializer(ProductoSerializer):
 class ProductoUpdateSerializer(ProductoSerializer):
     """Serializer específico para actualizar productos"""
     # Sobrescribir el campo para permitir escritura en actualización
-    orden_trabajo_pdf = serializers.FileField(required=False, allow_null=True)
+    orden_trabajo_pdf = serializers.FileField(required=False, allow_null=True, allow_empty_file=True)
     
     class Meta(ProductoSerializer.Meta):
         # Remover campos de solo lectura para actualización
@@ -108,6 +111,9 @@ class ProductoUpdateSerializer(ProductoSerializer):
     def update(self, instance, validated_data):
         """Actualizar producto con validaciones adicionales"""
         try:
+            # Si no hay PDF, asegurar que el campo sea None
+            if 'orden_trabajo_pdf' in validated_data and validated_data['orden_trabajo_pdf'] is None:
+                validated_data['orden_trabajo_pdf'] = None
             return super().update(instance, validated_data)
         except ValidationError as e:
             raise serializers.ValidationError(e.message_dict if hasattr(e, 'message_dict') else str(e))
