@@ -257,7 +257,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
 
         <div>
           <label htmlFor="orden_trabajo_pdf" className="block text-sm font-medium text-gray-300">
-            PDF Orden de Trabajo
+            PDF Factura
           </label>
           <input
             type="file"

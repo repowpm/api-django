@@ -210,14 +210,14 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
                 value={formData.numero_ot}
                 onChange={handleChange}
                 disabled={isLoading}
-                placeholder="Número de orden de trabajo"
+                placeholder="Número de factura"
               />
             </div>
           </div>
 
           <div>
             <label htmlFor="edit_orden_trabajo_pdf" className="block text-sm font-medium text-gray-300">
-              PDF Orden de Trabajo
+              PDF Factura
             </label>
             {product && product.tiene_pdf && (
               <div className="mb-2 p-2 bg-green-900 border border-green-700 rounded-md">
