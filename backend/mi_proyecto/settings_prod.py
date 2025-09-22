@@ -38,6 +38,28 @@ CSRF_COOKIE_HTTPONLY = True
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 CORS_ALLOW_CREDENTIALS = True
 
+# Configuración adicional de CORS para asegurar compatibilidad
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+CORS_ALLOWED_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
 # Configuración de cache para producción (usar cache en memoria)
 CACHES = {
     'default': {
