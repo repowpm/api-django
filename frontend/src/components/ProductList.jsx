@@ -16,7 +16,7 @@ const ProductList = ({ onProductEdit, refreshTrigger, onProductAdded }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(8); // Máximo 8 productos por página para no superar la altura del formulario
+  const [itemsPerPage] = useState(5); // Máximo 5 productos por página para no superar la altura del formulario
   const tableRef = useRef(null);
 
   const loadProducts = async () => {
@@ -224,6 +224,17 @@ const ProductList = ({ onProductEdit, refreshTrigger, onProductAdded }) => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentProducts = products.slice(startIndex, endIndex);
+  
+  // Debug: Verificar paginación
+  console.log('Paginación debug:', {
+    totalProducts: products.length,
+    itemsPerPage,
+    currentPage,
+    totalPages,
+    startIndex,
+    endIndex,
+    currentProductsLength: currentProducts.length
+  });
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
