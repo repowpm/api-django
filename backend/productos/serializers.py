@@ -43,11 +43,11 @@ class ProductoSerializer(serializers.ModelSerializer):
         
         # Verificar que no exista otro producto con el mismo nombre
         if self.instance is None:  # Creando nuevo producto
-            if Producto.objects.filter(nombre__iexact=value.strip()).exists():
+            if Producto.objects.filter(nombre__iexact=value.strip(), activo=True).exists():
                 logger.error(f"Nombre duplicado: '{value.strip()}'")
                 raise serializers.ValidationError("Ya existe un producto con este nombre")
         else:  # Actualizando producto existente
-            if Producto.objects.filter(nombre__iexact=value.strip()).exclude(id=self.instance.id).exists():
+            if Producto.objects.filter(nombre__iexact=value.strip(), activo=True).exclude(id=self.instance.id).exists():
                 logger.error(f"Nombre duplicado: '{value.strip()}'")
                 raise serializers.ValidationError("Ya existe un producto con este nombre")
         
