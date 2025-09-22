@@ -121,7 +121,7 @@ class ProductoViewSet(viewsets.ModelViewSet):
                         elif field == 'stock':
                             error_messages.append('El stock debe ser un número entero mayor o igual a 0.')
                         elif field == 'numero_ot':
-                            error_messages.append('El número de OT debe ser un número entero mayor a 0.')
+                            error_messages.append('El número de Factura debe ser un número entero mayor a 0.')
                         else:
                             error_messages.append(f'{field}: {errors[0] if isinstance(errors, list) else errors}')
                     
@@ -197,7 +197,7 @@ class ProductoViewSet(viewsets.ModelViewSet):
                         elif field == 'stock':
                             error_messages.append('El stock debe ser un número entero mayor o igual a 0.')
                         elif field == 'numero_ot':
-                            error_messages.append('El número de OT debe ser un número entero mayor a 0.')
+                            error_messages.append('El número de Factura debe ser un número entero mayor a 0.')
                         else:
                             error_messages.append(f'{field}: {errors[0] if isinstance(errors, list) else errors}')
                     

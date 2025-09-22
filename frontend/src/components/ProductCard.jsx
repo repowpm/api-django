@@ -58,7 +58,7 @@ const ProductCard = ({ product, onEdit, onDelete, onDownloadPDF, onStockChange }
             </div>
             {product.numero_ot && (
               <div>
-                <span className="font-medium">OT:</span>
+                <span className="font-medium">Factura:</span>
                 <span className="ml-1">{product.numero_ot}</span>
               </div>
             )}

@@ -239,7 +239,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
 
           <div>
             <label htmlFor="numero_ot" className="block text-sm font-medium text-gray-300">
-              Número OT
+              Número Factura
             </label>
             <input
               type="number"
@@ -250,7 +250,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
               value={formData.numero_ot}
               onChange={handleChange}
               disabled={isLoading}
-              placeholder="OT"
+              placeholder="Factura"
             />
           </div>
         </div>

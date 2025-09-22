@@ -86,16 +86,16 @@ class ProductoSerializer(serializers.ModelSerializer):
         return value
 
     def validate_numero_ot(self, value):
-        """Validación personalizada para el número de OT"""
+        """Validación personalizada para el número de Factura"""
         import logging
         logger = logging.getLogger(__name__)
         logger.info(f"Validando numero_ot: {value} (tipo: {type(value)})")
         
         if value is not None and value <= 0:
-            logger.error(f"Número OT inválido: {value} <= 0")
-            raise serializers.ValidationError("El número de OT debe ser mayor a 0")
+            logger.error(f"Número Factura inválido: {value} <= 0")
+            raise serializers.ValidationError("El número de Factura debe ser mayor a 0")
         
-        logger.info(f"Número OT válido: {value}")
+        logger.info(f"Número Factura válido: {value}")
         return value
 
     def validate(self, data):
@@ -103,7 +103,7 @@ class ProductoSerializer(serializers.ModelSerializer):
         # Validar que si se proporciona número_ot, también se proporcione stock
         if data.get('numero_ot') and not data.get('stock'):
             raise serializers.ValidationError({
-                'stock': 'Si se proporciona número de OT, también debe proporcionarse el stock'
+                'stock': 'Si se proporciona número de Factura, también debe proporcionarse el stock'
             })
         
         return data

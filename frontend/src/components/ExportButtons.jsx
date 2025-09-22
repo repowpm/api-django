@@ -18,7 +18,7 @@ const ExportButtons = ({ products, tableRef }) => {
         { header: 'Precio', key: 'precio', width: 15 },
         { header: 'Descripción', key: 'descripcion', width: 40 },
         { header: 'Stock', key: 'stock', width: 10 },
-        { header: 'Número OT', key: 'numero_ot', width: 15 },
+        { header: 'Número Factura', key: 'numero_ot', width: 15 },
         { header: 'Fecha Creación', key: 'fecha_creacion', width: 20 },
         { header: 'Activo', key: 'activo', width: 10 }
       ];

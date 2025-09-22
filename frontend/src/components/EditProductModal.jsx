@@ -199,7 +199,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
 
             <div>
               <label htmlFor="edit_numero_ot" className="block text-sm font-medium text-gray-300">
-                Número OT
+                Número Factura
               </label>
               <input
                 type="number"
