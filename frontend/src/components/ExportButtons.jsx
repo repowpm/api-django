@@ -1,7 +1,6 @@
 import React from 'react';
 import ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import toast from 'react-hot-toast';
 
 const ExportButtons = ({ products, tableRef }) => {
@@ -65,38 +64,112 @@ const ExportButtons = ({ products, tableRef }) => {
   };
 
   // Exportar a PDF
-  const exportToPDF = async () => {
+  const exportToPDF = () => {
     try {
-      if (!tableRef.current) {
-        toast.error('No se encontró la tabla para exportar');
-        return;
-      }
-
-      const canvas = await html2canvas(tableRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#1f2937'
-      });
-
-      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('l', 'mm', 'a4');
-      const imgWidth = 210;
-      const pageHeight = 295;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      // Configuración de colores
+      const headerColor = [59, 130, 246]; // Blue-500
+      const textColor = [31, 41, 55]; // Gray-800
+      const borderColor = [209, 213, 219]; // Gray-300
+      
+      // Título
+      pdf.setFontSize(20);
+      pdf.setTextColor(...textColor);
+      pdf.text('Lista de Productos', pageWidth / 2, 20, { align: 'center' });
+      
+      // Fecha de exportación
+      pdf.setFontSize(10);
+      pdf.setTextColor(107, 114, 128); // Gray-500
+      pdf.text(`Exportado el: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, 30, { align: 'center' });
+      
+      // Configuración de la tabla
+      const startY = 40;
+      const rowHeight = 8;
+      const colWidths = [15, 40, 20, 15, 20, 15, 25]; // ID, Nombre, Precio, Stock, Factura, PDF, Fecha
+      const colHeaders = ['ID', 'Nombre', 'Precio', 'Stock', 'Factura', 'PDF', 'Fecha'];
+      
+      let currentY = startY;
+      
+      // Encabezados de la tabla
+      pdf.setFillColor(...headerColor);
+      pdf.rect(10, currentY - 5, pageWidth - 20, rowHeight, 'F');
+      
+      pdf.setTextColor(255, 255, 255); // Blanco
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'bold');
+      
+      let xPos = 15;
+      colHeaders.forEach((header, index) => {
+        pdf.text(header, xPos, currentY);
+        xPos += colWidths[index];
+      });
+      
+      currentY += rowHeight;
+      
+      // Datos de la tabla
+      pdf.setTextColor(...textColor);
+      pdf.setFont(undefined, 'normal');
+      pdf.setFontSize(9);
+      
+      products.forEach((product, index) => {
+        // Verificar si necesitamos una nueva página
+        if (currentY > pageHeight - 20) {
+          pdf.addPage();
+          currentY = 20;
+        }
+        
+        // Fondo alternado para filas
+        if (index % 2 === 0) {
+          pdf.setFillColor(249, 250, 251); // Gray-50
+          pdf.rect(10, currentY - 5, pageWidth - 20, rowHeight, 'F');
+        }
+        
+        // Datos de la fila
+        const rowData = [
+          product.id.toString(),
+          product.nombre.length > 25 ? product.nombre.substring(0, 25) + '...' : product.nombre,
+          `$${Math.round(product.precio).toLocaleString()}`,
+          product.stock !== null ? product.stock.toString() : 'N/A',
+          product.numero_ot ? product.numero_ot.toString() : 'N/A',
+          product.tiene_pdf ? 'Sí' : 'No',
+          new Date(product.fecha_creacion).toLocaleDateString('es-ES')
+        ];
+        
+        xPos = 15;
+        rowData.forEach((data, colIndex) => {
+          pdf.text(data, xPos, currentY);
+          xPos += colWidths[colIndex];
+        });
+        
+        currentY += rowHeight;
+      });
+      
+      // Líneas de la tabla
+      pdf.setDrawColor(...borderColor);
+      pdf.setLineWidth(0.1);
+      
+      // Líneas verticales
+      xPos = 10;
+      colWidths.forEach((width, index) => {
+        xPos += width;
+        pdf.line(xPos, startY - 5, xPos, currentY - rowHeight);
+      });
+      
+      // Líneas horizontales
+      for (let y = startY - 5; y <= currentY - rowHeight; y += rowHeight) {
+        pdf.line(10, y, pageWidth - 10, y);
       }
-
+      
+      // Pie de página
+      const totalY = currentY + 10;
+      pdf.setFontSize(8);
+      pdf.setTextColor(107, 114, 128);
+      pdf.text(`Total de productos: ${products.length}`, 15, totalY);
+      pdf.text(`Página 1 de 1`, pageWidth - 15, totalY, { align: 'right' });
+      
       pdf.save(`productos_${new Date().toISOString().split('T')[0]}.pdf`);
       toast.success('Archivo PDF exportado exitosamente');
     } catch (error) {
