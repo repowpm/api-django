@@ -16,7 +16,7 @@ const ProductList = ({ onProductEdit, refreshTrigger, onProductAdded }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10); // Máximo 10 productos por página
+  const [itemsPerPage] = useState(8); // Máximo 8 productos por página para no superar la altura del formulario
   const tableRef = useRef(null);
 
   const loadProducts = async () => {
@@ -283,7 +283,7 @@ const ProductList = ({ onProductEdit, refreshTrigger, onProductAdded }) => {
           
           {/* Tabla de productos */}
           <div className="bg-gray-800 rounded-lg shadow-lg border border-gray-700">
-            <div className="overflow-hidden">
+            <div className="overflow-hidden max-h-96 overflow-y-auto">
               <table ref={tableRef} className="w-full divide-y divide-gray-700">
                 <thead className="bg-gray-700">
                   <tr>
