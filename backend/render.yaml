@@ -15,7 +15,9 @@ services:
       - key: ALLOWED_HOSTS
         value: api-django-uwx1.onrender.com
       - key: DATABASE_URL
-        value: postgresql://productos_0maa_user:Y61E0fR8zhpryQe6ZfJyQSHZZLwBkYug@dpg-d37kjdjuibrs7394s5n0-a.oregon-postgres.render.com:5432/productos_0maa
+        fromDatabase:
+          name: productos-db
+          property: connectionString
       - key: CORS_ALLOWED_ORIGINS
         value: https://api-django-uwx1.onrender.com,https://api-django-chi.vercel.app,http://localhost:3000
 
