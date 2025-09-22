@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { productService } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -12,6 +12,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
     orden_trabajo_pdf: null
   });
   const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   // Cargar datos del producto si está en modo edición
   React.useEffect(() => {
@@ -33,6 +34,10 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
         numero_ot: '',
         orden_trabajo_pdf: null
       });
+    }
+    // Limpiar el input de archivo cuando cambia el modo
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   }, [editingProduct]);
 
@@ -111,6 +116,10 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
         numero_ot: '',
         orden_trabajo_pdf: null
       });
+      // Limpiar el input de archivo
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       setEditingProduct(null);
       
     } catch (error) {
@@ -176,6 +185,10 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
       numero_ot: '',
       orden_trabajo_pdf: null
     });
+    // Limpiar el input de archivo
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setEditingProduct(null);
   };
 
@@ -275,6 +288,7 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
             PDF Factura
           </label>
           <input
+            ref={fileInputRef}
             type="file"
             id="orden_trabajo_pdf"
             name="orden_trabajo_pdf"
