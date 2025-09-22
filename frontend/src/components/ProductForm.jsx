@@ -119,8 +119,23 @@ const ProductForm = ({ onProductAdded, onProductUpdated, editingProduct, setEdit
       // Manejo específico de errores
       if (error.response?.status === 400) {
         const details = error.response.data?.details;
-        if (details?.nombre && details.nombre.includes('Ya existe un producto con este nombre')) {
+        
+        // Verificar si es un error de nombre duplicado
+        if (typeof details === 'string' && details.includes('Ya existe un producto con este nombre')) {
           // Sugerir un nombre alternativo
+          const nombreActual = formData.nombre;
+          const nombreSugerido = `${nombreActual} (${new Date().getTime().toString().slice(-4)})`;
+          toast.error(`Ya existe un producto con este nombre. Sugerencia: "${nombreSugerido}"`, {
+            duration: 5000,
+            action: {
+              label: 'Usar sugerencia',
+              onClick: () => {
+                setFormData(prev => ({ ...prev, nombre: nombreSugerido }));
+              }
+            }
+          });
+        } else if (details?.nombre && details.nombre.includes('Ya existe un producto con este nombre')) {
+          // Manejo para formato de objeto
           const nombreActual = formData.nombre;
           const nombreSugerido = `${nombreActual} (${new Date().getTime().toString().slice(-4)})`;
           toast.error(`Ya existe un producto con este nombre. Sugerencia: "${nombreSugerido}"`, {
